@@ -1,20 +1,40 @@
-﻿@page "/matchday/{league}/{season:int}/{matchday:int}"
+﻿@page "/matchday"
 @using CA3.Models
 @using CA3.Services
 @inject OpenLigaService Api
 
-<h2>@leagueName @season – Matchday @matchday</h2>
+<h2>Matchday Viewer</h2>
 
-@if (matches == null)
+<div class="d-flex align-items-center gap-2 mb-3">
+
+    <!-- LEAGUE -->
+    <select class="form-select w-auto" @bind="selectedLeague">
+        <option value="bl1">1. Bundesliga </option>
+        <option value="bl2">2. Bundesliga </option>
+        <option value="bl3">3. Bundesliga </option>
+    </select>
+
+    <!-- YEAR / SEASON -->
+    <input type="number" class="form-control w-auto" @bind="selectedSeason" />
+
+    <!-- MATCHDAY -->
+    <input type="number" class="form-control w-auto" @bind="selectedMatchday" />
+
+    <button class="btn btn-primary" @onclick="LoadMatches">Load</button>
+</div>
+
+@if (loading)
 {
-    <p>Loading...</p>
+    <p>Loading matches...</p>
 }
-else if (!matches.Any())
+else if (matches == null || matches.Count == 0)
 {
-    <p>No matches found.</p>
+    <p>No matches found for this selection.</p>
 }
 else
 {
+    <h5>@selectedLeague @selectedSeason – Matchday @selectedMatchday</h5>
+
     @foreach (var m in matches)
     {
         <div class="card my-3">
@@ -52,20 +72,19 @@ else
                 <!-- Goals list -->
                 @if (m.goals != null && m.goals.Any())
                 {
-                    <ul>
+                    <ul class="mb-0">
                         @foreach (var g in m.goals)
                         {
                             <li>
                                 <b>@g.goalGetterName</b>
-                                (@g.matchMinute')
-                                - @g.scoreTeam1:@g.scoreTeam2
+                                (@g.matchMinute') – @g.scoreTeam1:@g.scoreTeam2
                             </li>
                         }
                     </ul>
                 }
                 else
                 {
-                    <p class="text-muted">No goals recorded.</p>
+                    <p class="text-muted mb-0">No goals recorded.</p>
                 }
 
             </div>
@@ -74,20 +93,22 @@ else
 }
 
 @code {
-    [Parameter] public string league { get; set; } = "";
-    [Parameter] public int season { get; set; }
-    [Parameter] public int matchday { get; set; }
+    private string selectedLeague = "bl1";
+    private int selectedSeason = DateTime.Now.Year;
+    private int selectedMatchday = 1;
 
+    private bool loading = false;
     private List<MatchData>? matches;
-    private string leagueName = "";
 
-    protected override async Task OnInitializedAsync()
+    private async Task LoadMatches()
     {
-        matches = await Api.GetMatchdayAsync(league, season, matchday);
+        loading = true;
 
-        if (matches != null && matches.Any())
-        {
-            leagueName = matches[0].leagueName ?? league;
-        }
+        matches = await Api.GetMatchdayAsync(
+            selectedLeague,
+            selectedSeason,
+            selectedMatchday);
+
+        loading = false;
     }
 }

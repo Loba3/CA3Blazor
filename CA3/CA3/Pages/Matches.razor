@@ -3,101 +3,173 @@
 @using CA3.Services
 @inject OpenLigaService Api
 
-<h2>OpenLigaDB Matches</h2>
+<h3>@leagueTitle @season</h3>
 
-<div class="d-flex align-items-center gap-2 mb-4">
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div></div>
 
-    <select class="form-select w-auto" @bind="selectedLeague">
-        <option value="bl1">Bundesliga</option>
-        <option value="bl2">2. Bundesliga </option>
-    </select>
+    <div class="d-flex align-items-center gap-2">
+        <button class="btn btn-sm btn-outline-secondary"
+                @onclick="PrevMatchday"
+                disabled="@(matchday <= 1)">
+            &laquo;
+        </button>
 
-    <input type="number" class="form-control w-auto" @bind="selectedSeason" />
-    <input type="number" class="form-control w-auto" @bind="selectedMatchday" />
+        <span class="badge bg-light text-dark border">
+            Matchday @matchday
+        </span>
 
-    <button class="btn btn-primary" @onclick="LoadMatches">Load</button>
+        <button class="btn btn-sm btn-outline-secondary"
+                @onclick="NextMatchday">
+            &raquo;
+        </button>
+    </div>
 </div>
 
 @if (loading)
 {
-    <p>Loading matches...</p>
+    <p>Loading matchday...</p>
 }
-else if (matches == null || matches.Count == 0)
+else if (matches == null || !matches.Any())
 {
-    <p>No matches found for this selection.</p>
+    <p>No matches found.</p>
 }
 else
 {
-    <div class="list-group">
+    @foreach (var m in matches.OrderBy(x => x.matchDateTime))
+    {
+        <div class="card mb-4 border-0 shadow-sm">
 
-        @foreach (var m in matches)
-        {
-            <div class="list-group-item py-3">
+            <!-- Header -->
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center gap-2">
 
-                <div class="d-flex justify-content-between align-items-center">
+                    <img src="@m.Team1?.teamIconUrl" width="24" height="24" />
+                    <strong>@m.Team1?.teamName</strong>
 
-                    <!-- TEAM NAMES + ICONS -->
-                    <div class="d-flex align-items-center gap-3">
+                    <span class="mx-1">vs</span>
 
-                        <img src="@m.Team1?.teamIconUrl" width="40" height="40" />
-                        <strong>@m.Team1?.teamName</strong>
-
-                        <span class="mx-2">vs</span>
-
-                        <img src="@m.Team2?.teamIconUrl" width="40" height="40" />
-                        <strong>@m.Team2?.teamName</strong>
-
-                    </div>
-
-                    <!-- SCORE OR KICKOFF TIME -->
-                    <div>
-                        @if (m.matchIsFinished)
-                        {
-                            var result = m.matchResults?
-                            .FirstOrDefault(r => r.resultTypeID == 2);
-
-                            if (result != null)
-                            {
-                                <span class="badge bg-success fs-5">
-                                    @result.pointsTeam1 - @result.pointsTeam2
-                                </span>
-                            }
-                            else
-                            {
-                                <span>Finished</span>
-                            }
-                        }
-                        else
-                        {
-                            <span>@m.matchDateTime.ToString("dd MMM HH:mm")</span>
-                        }
-                    </div>
-
+                    <img src="@m.Team2?.teamIconUrl" width="24" height="24" />
+                    <strong>@m.Team2?.teamName</strong>
                 </div>
 
+                <small class="text-muted">
+                    @m.matchDateTime.ToString("dd.MM.yy HH:mm")
+                </small>
             </div>
-        }
 
-    </div>
+            <div class="card-body">
+
+                @if (m.matchIsFinished)
+                {
+                    <p class="mb-3 text-success fw-bold">The game is over!</p>
+                }
+                else
+                {
+                    <p class="mb-3 text-info fw-bold">Game not finished yet.</p>
+                }
+
+                <!-- TABLE -->
+                <table class="table table-sm mb-2">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Result</th>
+                            <th>Scorer</th>
+                            <th>Minute</th>
+                            <th>Result type</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        <!-- GOALS -->
+                        @if (m.goals != null && m.goals.Any())
+                        {
+                            @foreach (var g in m.goals.OrderBy(g => g.matchMinute))
+                            {
+                                <tr>
+                                    <td>@g.scoreTeam1 : @g.scoreTeam2</td>
+                                    <td>@g.goalGetterName</td>
+                                    <td>@g.matchMinute'</td>
+                                    <td></td>
+                                </tr>
+                            }
+                        }
+
+                        <!-- OFFICIAL RESULTS (Half-time, Final result) -->
+                        @if (m.matchResults != null)
+                        {
+                            @foreach (var r in m.matchResults.OrderBy(r => r.resultOrderID))
+                            {
+                                <tr>
+                                    <td>@r.pointsTeam1 : @r.pointsTeam2</td>
+                                    <td></td>
+                                    <td></td>
+                                    <td>
+                                        <strong>@TranslateResultType(r.resultName)</strong>
+                                    </td>
+                                </tr>
+                            }
+                        }
+
+                    </tbody>
+                </table>
+
+                <small class="text-muted">
+                    Last updated: @m.lastUpdateDateTime.ToString("dd.MM.yy HH:mm")
+                </small>
+
+            </div>
+        </div>
+    }
 }
 
 @code {
-    private string selectedLeague = "bl1";
-    private int selectedSeason = DateTime.Now.Year;
-    private int selectedMatchday = 1;
+    private string league = "bl1";
+    private int season = DateTime.Now.Year;
+    private int matchday = 1;
 
     private List<MatchData>? matches;
-    private bool loading = false;
+    private bool loading;
+    private string leagueTitle = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadMatches();
+    }
 
     private async Task LoadMatches()
     {
         loading = true;
 
-        matches = await Api.GetMatchdayAsync(
-            selectedLeague,
-            selectedSeason,
-            selectedMatchday);
+        matches = await Api.GetMatchdayAsync(league, season, matchday);
+        leagueTitle = matches?.FirstOrDefault()?.leagueName ?? "League";
 
         loading = false;
+        StateHasChanged();
+    }
+
+    private async Task PrevMatchday()
+    {
+        if (matchday <= 1) return;
+
+        matchday--;
+        await LoadMatches();
+    }
+
+    private async Task NextMatchday()
+    {
+        matchday++;
+        await LoadMatches();
+    }
+
+    private string TranslateResultType(string resultName)
+    {
+        return resultName switch
+        {
+            "Halbzeit" => "Halftime",
+            "Endergebnis" => "Final result",
+            _ => resultName
+        };
     }
 }

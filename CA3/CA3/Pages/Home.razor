@@ -1,7 +1,33 @@
 ﻿@page "/"
 
-<PageTitle>Home</PageTitle>
+<div class="container mt-5">
+    <h1 class="mb-4 text-center">Choose a League</h1>
 
-<h1>Hello, world!</h1>
+    <div class="row justify-content-center">
 
-Welcome to your new app.
+        <!-- Bundesliga -->
+        <div class="col-md-4 mb-4">
+            <NavLink class="text-decoration-none" href="/matches/bl1">
+                <div class="card shadow-sm text-center p-4">
+                    <h3 class="card-title">Bundesliga</h3>
+                    <p class="card-text text-muted">
+                        View fixtures and results for the German Bundesliga.
+                    </p>
+                </div>
+            </NavLink>
+        </div>
+
+        <!-- Champions League -->
+        <div class="col-md-4 mb-4">
+            <NavLink class="text-decoration-none" href="/matches/cl">
+                <div class="card shadow-sm text-center p-4">
+                    <h3 class="card-title">Champions League</h3>
+                    <p class="card-text text-muted">
+                        View fixtures and results for the UEFA Champions League.
+                    </p>
+                </div>
+            </NavLink>
+        </div>
+
+    </div>
+</div>

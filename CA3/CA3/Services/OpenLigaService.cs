@@ -14,14 +14,12 @@ namespace CA3.Services
             _http = http;
         }
 
-        public async Task<List<MatchData>> GetSeasonAsync(string league, int season)
+        public async Task<List<Group>?> GetCurrentGroupAsync(string shortcut)
         {
-            string url = $"https://api.openligadb.de/getmatchdata/{league}/{season}";
-
-            var data = await _http.GetFromJsonAsync<List<MatchData>>(url);
-
-            return data ?? new List<MatchData>();
+            string url = $"https://api.openligadb.de/getcurrentgroup/{shortcut}";
+            return await _http.GetFromJsonAsync<List<Group>>(url);
         }
+
 
         public async Task<List<MatchData>> GetMatchdayAsync(string league, int season, int matchday)
         {
@@ -37,7 +35,6 @@ namespace CA3.Services
             var data = await _http.GetFromJsonAsync<List<LeagueInfo>>(url);
             return data ?? new List<LeagueInfo>();
         }
-
 
     }
 }

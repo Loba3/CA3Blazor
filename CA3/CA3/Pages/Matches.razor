@@ -1,38 +1,106 @@
 ﻿@page "/matches"
-@using System.Text.Json
-@inject CA3.Services.OpenLigaService OpenLiga
+@using CA3.Models
+@using CA3.Services
+@inject OpenLigaService Api
 
-<h3>OpenLigaDB Matches</h3>
+<h2>OpenLigaDB Matches</h2>
 
-<select @bind="league">
-    <option value="bl1">Bundesliga (bl1)</option>
-    <option value="champion1">Champions League (champion1)</option>
-</select>
+<div class="d-flex align-items-center gap-2 mb-4">
 
-<input type="number" @bind="season" placeholder="Season (e.g., 2025)" />
-<input type="number" @bind="matchday" placeholder="Matchday (e.g., 1)" />
+    <select class="form-select w-auto" @bind="selectedLeague">
+        <option value="bl1">Bundesliga (bl1)</option>
+        <option value="bl2">2. Bundesliga (bl2)</option>
+        <option value="pl">Premier League (pl)</option>
+        <option value="laliga">La Liga (laliga)</option>
+        <option value="seria">Serie A (seria)</option>
+    </select>
 
-<button @onclick="LoadData">Load</button>
+    <input type="number" class="form-control w-auto" @bind="selectedSeason" />
+    <input type="number" class="form-control w-auto" @bind="selectedMatchday" />
 
-@if (!string.IsNullOrEmpty(jsonData))
+    <button class="btn btn-primary" @onclick="LoadMatches">Load</button>
+</div>
+
+@if (loading)
 {
-    <pre>@jsonData</pre>
+    <p>Loading matches...</p>
+}
+else if (matches == null || matches.Count == 0)
+{
+    <p>No matches found for this selection.</p>
+}
+else
+{
+    <div class="list-group">
+
+        @foreach (var m in matches)
+        {
+            <div class="list-group-item py-3">
+
+                <div class="d-flex justify-content-between align-items-center">
+
+                    <!-- TEAM NAMES + ICONS -->
+                    <div class="d-flex align-items-center gap-3">
+
+                        <img src="@m.Team1?.teamIconUrl" width="40" height="40" />
+                        <strong>@m.Team1?.teamName</strong>
+
+                        <span class="mx-2">vs</span>
+
+                        <img src="@m.Team2?.teamIconUrl" width="40" height="40" />
+                        <strong>@m.Team2?.teamName</strong>
+
+                    </div>
+
+                    <!-- SCORE OR KICKOFF TIME -->
+                    <div>
+                        @if (m.matchIsFinished)
+                        {
+                            var result = m.matchResults?
+                            .FirstOrDefault(r => r.resultTypeID == 2);
+
+                            if (result != null)
+                            {
+                                <span class="badge bg-success fs-5">
+                                    @result.pointsTeam1 - @result.pointsTeam2
+                                </span>
+                            }
+                            else
+                            {
+                                <span>Finished</span>
+                            }
+                        }
+                        else
+                        {
+                            <span>@m.matchDateTime.ToString("dd MMM HH:mm")</span>
+                        }
+                    </div>
+
+                </div>
+
+            </div>
+        }
+
+    </div>
 }
 
 @code {
-    string league = "bl1";
-    int season = 2025;
-    int matchday = 1;
+    private string selectedLeague = "bl1";
+    private int selectedSeason = DateTime.Now.Year;
+    private int selectedMatchday = 1;
 
-    string? jsonData;
+    private List<MatchData>? matches;
+    private bool loading = false;
 
-    async Task LoadData()
+    private async Task LoadMatches()
     {
-        var data = await OpenLiga.GetMatchdayAsync(league, season, matchday);
+        loading = true;
 
-        jsonData = JsonSerializer.Serialize(data, new JsonSerializerOptions
-        {
-            WriteIndented = true
-        });
+        matches = await Api.GetMatchdayAsync(
+            selectedLeague,
+            selectedSeason,
+            selectedMatchday);
+
+        loading = false;
     }
 }

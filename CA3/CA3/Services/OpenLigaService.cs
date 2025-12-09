@@ -1,6 +1,7 @@
 ﻿using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
+using CA3.Models;
 
 namespace CA3.Services
 {
@@ -13,16 +14,23 @@ namespace CA3.Services
             _http = http;
         }
 
-        public async Task<object?> GetSeasonAsync(string league, int season)
+        public async Task<List<MatchData>> GetSeasonAsync(string league, int season)
         {
             string url = $"https://api.openligadb.de/getmatchdata/{league}/{season}";
-            return await _http.GetFromJsonAsync<object>(url);
+
+            var data = await _http.GetFromJsonAsync<List<MatchData>>(url);
+
+            return data ?? new List<MatchData>();
         }
 
-        public async Task<object?> GetMatchdayAsync(string league, int season, int matchday)
+        public async Task<List<MatchData>> GetMatchdayAsync(string league, int season, int matchday)
         {
             string url = $"https://api.openligadb.de/getmatchdata/{league}/{season}/{matchday}";
-            return await _http.GetFromJsonAsync<object>(url);
+
+            var data = await _http.GetFromJsonAsync<List<MatchData>>(url);
+
+            return data ?? new List<MatchData>(); // <-- prevents null crash
         }
+
     }
 }

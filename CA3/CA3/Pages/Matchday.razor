@@ -1,0 +1,93 @@
+﻿@page "/matchday/{league}/{season:int}/{matchday:int}"
+@using CA3.Models
+@using CA3.Services
+@inject OpenLigaService Api
+
+<h2>@leagueName @season – Matchday @matchday</h2>
+
+@if (matches == null)
+{
+    <p>Loading...</p>
+}
+else if (!matches.Any())
+{
+    <p>No matches found.</p>
+}
+else
+{
+    @foreach (var m in matches)
+    {
+        <div class="card my-3">
+            <div class="card-body">
+
+                <!-- Match header -->
+                <h5>
+                    <img src="@m.Team1?.teamIconUrl" width="25" />
+                    @m.Team1?.teamName
+                    <span class="mx-1">vs</span>
+                    <img src="@m.Team2?.teamIconUrl" width="25" />
+                    @m.Team2?.teamName
+                </h5>
+
+                <!-- Score or kickoff -->
+                @if (m.matchIsFinished)
+                {
+                    var result = m.matchResults?.FirstOrDefault(r => r.resultTypeID == 2);
+                    if (result != null)
+                    {
+                        <p class="fw-bold">
+                            @result.pointsTeam1 – @result.pointsTeam2
+                        </p>
+                    }
+                    else
+                    {
+                        <p>Finished</p>
+                    }
+                }
+                else
+                {
+                    <p>@m.matchDateTime.ToString("dd MMM HH:mm")</p>
+                }
+
+                <!-- Goals list -->
+                @if (m.goals != null && m.goals.Any())
+                {
+                    <ul>
+                        @foreach (var g in m.goals)
+                        {
+                            <li>
+                                <b>@g.goalGetterName</b>
+                                (@g.matchMinute')
+                                - @g.scoreTeam1:@g.scoreTeam2
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <p class="text-muted">No goals recorded.</p>
+                }
+
+            </div>
+        </div>
+    }
+}
+
+@code {
+    [Parameter] public string league { get; set; } = "";
+    [Parameter] public int season { get; set; }
+    [Parameter] public int matchday { get; set; }
+
+    private List<MatchData>? matches;
+    private string leagueName = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        matches = await Api.GetMatchdayAsync(league, season, matchday);
+
+        if (matches != null && matches.Any())
+        {
+            leagueName = matches[0].leagueName ?? league;
+        }
+    }
+}

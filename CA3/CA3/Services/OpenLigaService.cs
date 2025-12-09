@@ -31,6 +31,13 @@ namespace CA3.Services
 
             return data ?? new List<MatchData>(); // <-- prevents null crash
         }
+        public async Task<List<LeagueInfo>> GetAvailableLeaguesAsync()
+        {
+            const string url = "https://api.openligadb.de/getavailableleagues";
+            var data = await _http.GetFromJsonAsync<List<LeagueInfo>>(url);
+            return data ?? new List<LeagueInfo>();
+        }
+
 
     }
 }

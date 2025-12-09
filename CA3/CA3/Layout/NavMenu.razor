@@ -9,17 +9,24 @@
 
 <div class="@NavMenuCssClass nav-scrollable" @onclick="ToggleNavMenu">
     <nav class="flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
+        <li class="nav-item px-3">
+            <NavLink class="nav-link" href="">
+                <span class="oi oi-home"></span> Home
             </NavLink>
-        </div>
+        </li>
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="matches">
-                <span class="bi bi-trophy-fill" aria-hidden="true"></span> Matches
+        <li class="nav-item px-3">
+            <NavLink class="nav-link" href="/matches">
+                <span class="oi oi-grid-two-up"></span> Matches
             </NavLink>
-        </div>
+        </li>
+
+        <li class="nav-item px-3">
+            <NavLink class="nav-link" href="/matchday/bl1/2024/1">
+                <span class="oi oi-calendar"></span> Matchday Details
+            </NavLink>
+        </li>
+
     </nav>
 
 </div>

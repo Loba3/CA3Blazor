@@ -1,0 +1,38 @@
+﻿@page "/matches"
+@using System.Text.Json
+@inject CA3.Services.OpenLigaService OpenLiga
+
+<h3>OpenLigaDB Matches</h3>
+
+<select @bind="league">
+    <option value="bl1">Bundesliga (bl1)</option>
+    <option value="champion1">Champions League (champion1)</option>
+</select>
+
+<input type="number" @bind="season" placeholder="Season (e.g., 2025)" />
+<input type="number" @bind="matchday" placeholder="Matchday (e.g., 1)" />
+
+<button @onclick="LoadData">Load</button>
+
+@if (!string.IsNullOrEmpty(jsonData))
+{
+    <pre>@jsonData</pre>
+}
+
+@code {
+    string league = "bl1";
+    int season = 2025;
+    int matchday = 1;
+
+    string? jsonData;
+
+    async Task LoadData()
+    {
+        var data = await OpenLiga.GetMatchdayAsync(league, season, matchday);
+
+        jsonData = JsonSerializer.Serialize(data, new JsonSerializerOptions
+        {
+            WriteIndented = true
+        });
+    }
+}

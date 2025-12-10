@@ -56,7 +56,7 @@ namespace CA3.E2E
             var page = await browser.NewPageAsync();
             await page.GotoAsync(BaseUrl);
 
-            // Wait for card
+            
             await page.WaitForSelectorAsync("text=Champions League");
 
             // Click card

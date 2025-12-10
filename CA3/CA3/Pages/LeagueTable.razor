@@ -1,0 +1,167 @@
+﻿@page "/league-table/{LeagueShortcut}"
+
+@using CA3.Models
+@using CA3.Services
+@inject OpenLigaService Api
+@inject NavigationManager Nav
+
+<h3>@leagueTitle @season - League Table</h3>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <label class="me-2">League</label>
+        <select class="form-select d-inline-block w-auto me-3"
+                value="@LeagueShortcut"
+                @onchange="OnLeagueChanged">
+            @foreach (var kv in leagues)
+            {
+                <option value="@kv.Key" selected="@(kv.Key == LeagueShortcut)">@kv.Value</option>
+            }
+        </select>
+
+        <label class="me-2">Season</label>
+        <select class="form-select d-inline-block w-auto"
+                value="@season"
+                @onchange="OnSeasonChanged">
+            @foreach (var s in seasonOptions)
+            {
+                <option value="@s">@s</option>
+            }
+        </select>
+    </div>
+</div>
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger">@errorMessage</div>
+}
+
+@if (tableRows is null || tableRows.Count == 0)
+{
+    <p>No league table data available for this season.</p>
+}
+else
+{
+    <table class="table table-hover table-bordered align-middle shadow-sm mb-4">
+        <thead class="table-dark">
+            <tr>
+                <th style="width:50px;">#</th>
+                <th>Team</th>
+                <th>MP</th>
+                <th>W</th>
+                <th>D</th>
+                <th>L</th>
+                <th>GF</th>
+                <th>GA</th>
+                <th>GD</th>
+                <th>Pts</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @{
+                var pos = 1;
+            }
+            @foreach (var row in tableRows)
+            {
+                string rowClass = pos switch
+                {
+                    1 => "table-success",   // winner
+                    <= 4 => "table-info",   // top 4
+                    >= 17 => "table-danger",// relegation zone (depends on league)
+                    _ => ""
+                };
+
+                <tr class="@rowClass">
+                    <td class="fw-bold">@pos</td>
+                    <td>@row.TeamName</td>
+                    <td>@row.Matches</td>
+                    <td>@row.Won</td>
+                    <td>@row.Draw</td>
+                    <td>@row.Lost</td>
+                    <td>@row.Goals</td>
+                    <td>@row.OpponentGoals</td>
+                    <td>@row.GoalDiff</td>
+                    <td class="fw-bold">@row.Points</td>
+                </tr>
+
+                pos++;
+            }
+        </tbody>
+    </table>
+
+}
+
+@code {
+    [Parameter] public string LeagueShortcut { get; set; } = "bl1";
+
+    private string leagueTitle = "League";
+    private int season;
+    private List<int> seasonOptions = new();
+    private List<LeagueRow> tableRows = new();
+    private string? errorMessage;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!leagues.TryGetValue(LeagueShortcut, out var title))
+        {
+            title = LeagueShortcut;
+        }
+
+        leagueTitle = title;
+
+        var currentYear = DateTime.Now.Year;
+
+        // last 6 seasons, newest first
+        seasonOptions = Enumerable.Range(currentYear - 5, 6)
+                                  .OrderByDescending(y => y)
+                                  .ToList();
+
+        if (season == 0)
+            season = seasonOptions.First();
+
+        await LoadTable();
+    }
+
+    private async Task LoadTable()
+    {
+        try
+        {
+            errorMessage = null;
+            tableRows = await Api.GetLeagueTableAsync(LeagueShortcut, season);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Failed to load league table: {ex.Message}";
+            tableRows = new();
+        }
+    }
+
+    private async Task OnSeasonChanged(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out var selected))
+        {
+            season = selected;
+            await LoadTable();
+        }
+    }
+
+    private async Task OnLeagueChanged(ChangeEventArgs e)
+    {
+        var value = e.Value?.ToString();
+        if (string.IsNullOrEmpty(value))
+            return;
+
+        // navigate to the same page with new league shortcut - this will update the parameter and reload data
+        Nav.NavigateTo($"/league-table/{value}");
+    }
+
+    // available leagues (shortcut => display name) - limited to Bundesliga 1/2/3 and Champions League
+    private readonly Dictionary<string, string> leagues = new()
+    {
+        { "bl1", "Bundesliga 1" },
+        { "bl2", "Bundesliga 2" },
+        { "bl3", "3. Liga" },
+        { "ucl", "Champions League" }
+    };
+}

@@ -2,10 +2,17 @@
 {
     public class LeagueRow
     {
-        public string LeagueName { get; set; } = "";
-        public string Shortcut { get; set; } = "";
-        public int Season { get; set; }
-        public int Matchday { get; set; }
-        public string TimeUntil { get; set; } = "";
+        public int TeamId { get; set; }
+        public string TeamName { get; set; } = string.Empty;
+
+        public int Matches { get; set; }
+        public int Won { get; set; }
+        public int Draw { get; set; }
+        public int Lost { get; set; }
+
+        public int Goals { get; set; }
+        public int OpponentGoals { get; set; }
+        public int GoalDiff { get; set; }
+        public int Points { get; set; }
     }
 }

@@ -161,9 +161,10 @@ else
 
     private async Task InitializeAsync()
     {
-        var current = DateTime.Now.Year;
-        seasons = Enumerable.Range(current - 10, 12).OrderByDescending(x => x).ToList();
-        if (!seasons.Contains(season)) season = seasons.First();
+        // Only offer the supported Champions League seasons
+        seasons = new List<int> { 2025, 2023 };
+        if (!seasons.Contains(season))
+            season = seasons.First();
         await LoadMatches();
     }
 
@@ -183,7 +184,11 @@ else
         try
         {
             errorMessage = null;
-            matches = await Api.GetMatchdayAsync(LeagueShortcut, season, matchday);
+            var shortcut = ChampionsLeagueShortcuts.ContainsKey(season)
+            ? ChampionsLeagueShortcuts[season]
+            : ChampionsLeagueShortcuts[2023]; // fallback
+
+            matches = await Api.GetMatchdayAsync(shortcut, season, matchday);
         }
         catch (Exception ex)
         {
@@ -219,6 +224,12 @@ else
             await LoadMatches();
         }
     }
+    // Champions League has different shortcuts per year
+    private readonly Dictionary<int, string> ChampionsLeagueShortcuts = new()
+{
+    { 2023, "champion1" },   // 2023/2024 season
+    { 2025, "ucl" }          // <-- replace "ucl" with the correct shortcut
+};
 
     private string TranslateResultType(string resultName)
     {

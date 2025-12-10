@@ -36,5 +36,14 @@ namespace CA3.Services
             return data ?? new List<LeagueInfo>();
         }
 
+        public async Task<List<LeagueRow>> GetLeagueTableAsync(string leagueShortcut, int season)
+        {
+            // OpenLiga table endpoint: /getbltable/{leagueShortcut}/{season}
+            var url = $"https://api.openligadb.de/getbltable/{leagueShortcut}/{season}";
+            var result = await _http.GetFromJsonAsync<List<LeagueRow>>(url);
+
+            return result ?? new List<LeagueRow>();
+        }
+
     }
 }

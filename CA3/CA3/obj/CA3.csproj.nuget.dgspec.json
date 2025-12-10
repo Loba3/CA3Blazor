@@ -76,10 +76,6 @@
               "target": "Package",
               "version": "[18.0.1, )"
             },
-            "Microsoft.Playwright": {
-              "target": "Package",
-              "version": "[1.57.0, )"
-            },
             "NUnit": {
               "target": "Package",
               "version": "[4.4.0, )"

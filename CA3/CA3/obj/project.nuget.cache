@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "UzrAJcq4aVU=",
+  "dgSpecHash": "nnzOywOI9Ys=",
   "success": true,
   "projectFilePath": "C:\\Users\\bjola\\CA3Blazor\\CA3\\CA3\\CA3.csproj",
   "expectedPackageFiles": [
@@ -13,7 +13,6 @@
     "C:\\Users\\bjola\\.nuget\\packages\\microsoft.aspnetcore.components.webassembly\\8.0.22\\microsoft.aspnetcore.components.webassembly.8.0.22.nupkg.sha512",
     "C:\\Users\\bjola\\.nuget\\packages\\microsoft.aspnetcore.components.webassembly.devserver\\8.0.22\\microsoft.aspnetcore.components.webassembly.devserver.8.0.22.nupkg.sha512",
     "C:\\Users\\bjola\\.nuget\\packages\\microsoft.aspnetcore.metadata\\8.0.22\\microsoft.aspnetcore.metadata.8.0.22.nupkg.sha512",
-    "C:\\Users\\bjola\\.nuget\\packages\\microsoft.bcl.asyncinterfaces\\6.0.0\\microsoft.bcl.asyncinterfaces.6.0.0.nupkg.sha512",
     "C:\\Users\\bjola\\.nuget\\packages\\microsoft.codecoverage\\18.0.1\\microsoft.codecoverage.18.0.1.nupkg.sha512",
     "C:\\Users\\bjola\\.nuget\\packages\\microsoft.extensions.configuration\\8.0.0\\microsoft.extensions.configuration.8.0.0.nupkg.sha512",
     "C:\\Users\\bjola\\.nuget\\packages\\microsoft.extensions.configuration.abstractions\\8.0.0\\microsoft.extensions.configuration.abstractions.8.0.0.nupkg.sha512",
@@ -35,7 +34,6 @@
     "C:\\Users\\bjola\\.nuget\\packages\\microsoft.net.illink.tasks\\8.0.22\\microsoft.net.illink.tasks.8.0.22.nupkg.sha512",
     "C:\\Users\\bjola\\.nuget\\packages\\microsoft.net.sdk.webassembly.pack\\9.0.11\\microsoft.net.sdk.webassembly.pack.9.0.11.nupkg.sha512",
     "C:\\Users\\bjola\\.nuget\\packages\\microsoft.net.test.sdk\\18.0.1\\microsoft.net.test.sdk.18.0.1.nupkg.sha512",
-    "C:\\Users\\bjola\\.nuget\\packages\\microsoft.playwright\\1.57.0\\microsoft.playwright.1.57.0.nupkg.sha512",
     "C:\\Users\\bjola\\.nuget\\packages\\microsoft.testing.extensions.telemetry\\2.0.2\\microsoft.testing.extensions.telemetry.2.0.2.nupkg.sha512",
     "C:\\Users\\bjola\\.nuget\\packages\\microsoft.testing.extensions.trxreport.abstractions\\2.0.2\\microsoft.testing.extensions.trxreport.abstractions.2.0.2.nupkg.sha512",
     "C:\\Users\\bjola\\.nuget\\packages\\microsoft.testing.extensions.vstestbridge\\2.0.2\\microsoft.testing.extensions.vstestbridge.2.0.2.nupkg.sha512",
@@ -48,7 +46,6 @@
     "C:\\Users\\bjola\\.nuget\\packages\\nunit\\4.4.0\\nunit.4.4.0.nupkg.sha512",
     "C:\\Users\\bjola\\.nuget\\packages\\nunit3testadapter\\6.0.0\\nunit3testadapter.6.0.0.nupkg.sha512",
     "C:\\Users\\bjola\\.nuget\\packages\\system.collections.immutable\\8.0.0\\system.collections.immutable.8.0.0.nupkg.sha512",
-    "C:\\Users\\bjola\\.nuget\\packages\\system.componentmodel.annotations\\5.0.0\\system.componentmodel.annotations.5.0.0.nupkg.sha512",
     "C:\\Users\\bjola\\.nuget\\packages\\system.diagnostics.diagnosticsource\\5.0.0\\system.diagnostics.diagnosticsource.5.0.0.nupkg.sha512",
     "C:\\Users\\bjola\\.nuget\\packages\\system.io.pipelines\\10.0.0\\system.io.pipelines.10.0.0.nupkg.sha512",
     "C:\\Users\\bjola\\.nuget\\packages\\system.reflection.metadata\\8.0.0\\system.reflection.metadata.8.0.0.nupkg.sha512",

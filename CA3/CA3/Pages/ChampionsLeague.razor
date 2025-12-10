@@ -1,0 +1,232 @@
+﻿@page "/champions-league"
+
+@using System.Linq
+@using CA3.Models
+@using CA3.Services
+@inject OpenLigaService Api
+
+<h3>Champions League @season</h3>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="d-flex align-items-center gap-2">
+        <label class="me-2 mb-0">Season</label>
+        <select class="form-select form-select-sm w-auto" value="@season" @onchange="OnSeasonChanged">
+            @foreach (var s in seasons)
+            {
+                <option value="@s">@s</option>
+            }
+        </select>
+    </div>
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger" role="alert">@errorMessage</div>
+}
+
+    <div class="d-flex align-items-center gap-2">
+        <button class="btn btn-sm btn-outline-secondary"
+                @onclick="PrevMatchday"
+                disabled="@(matchday <= 1)">
+            &laquo;
+        </button>
+        <select class="form-select form-select-sm w-auto" value="@matchday" @onchange="OnMatchdayChanged">
+            @for (int i = 1; i <= maxMatchday; i++)
+            {
+                <option value="@i">Matchday @i</option>
+            }
+        </select>
+        <button class="btn btn-sm btn-outline-secondary"
+                @onclick="NextMatchday">
+            &raquo;
+        </button>
+    </div>
+</div>
+
+@if (loading)
+{
+    <p>Loading matchday...</p>
+}
+else if (matches == null || !matches.Any())
+{
+    <p>No matches found.</p>
+}
+else
+{
+    @foreach (var m in matches.OrderBy(x => x.matchDateTime))
+    {
+        <div class="card mb-4 border-0 shadow-sm">
+
+            <!-- Header -->
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center gap-2">
+
+                    <img src="@m.Team1?.teamIconUrl" width="24" height="24" alt="@m.Team1?.teamName" />
+                    <strong>@m.Team1?.teamName</strong>
+
+                    <span class="mx-1">vs</span>
+
+                    <img src="@m.Team2?.teamIconUrl" width="24" height="24" alt="@m.Team2?.teamName" />
+                    <strong>@m.Team2?.teamName</strong>
+                </div>
+
+                <small class="text-muted">
+                    @m.matchDateTime.ToString("dd.MM.yy HH:mm")
+                </small>
+            </div>
+
+            <div class="card-body">
+
+                @if (m.matchIsFinished)
+                {
+                    <p class="mb-3 text-success fw-bold">The game is over!</p>
+                }
+                else
+                {
+                    <p class="mb-3 text-info fw-bold">Game not finished yet.</p>
+                }
+
+                <!-- TABLE -->
+                <table class="table table-sm mb-2">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Result</th>
+                            <th>Scorer</th>
+                            <th>Minute</th>
+                            <th>Result type</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        <!-- GOALS -->
+                        @if (m.goals != null && m.goals.Any())
+                        {
+                            @foreach (var g in m.goals.OrderBy(g => g.matchMinute))
+                            {
+                                <tr>
+                                    <td>@g.scoreTeam1 : @g.scoreTeam2</td>
+                                    <td>@g.goalGetterName</td>
+                                    <td>@g.matchMinute'</td>
+                                    <td></td>
+                                </tr>
+                            }
+                        }
+
+                        <!-- OFFICIAL RESULTS (Half-time, Final result) -->
+                        @if (m.matchResults != null)
+                        {
+                            @foreach (var r in m.matchResults.OrderBy(r => r.resultOrderID))
+                            {
+                                <tr>
+                                    <td>@r.pointsTeam1 : @r.pointsTeam2</td>
+                                    <td></td>
+                                    <td></td>
+                                    <td>
+                                        <strong>@TranslateResultType(r.resultName)</strong>
+                                    </td>
+                                </tr>
+                            }
+                        }
+
+                    </tbody>
+                </table>
+
+                <small class="text-muted">
+                    Last updated: @m.lastUpdateDateTime.ToString("dd.MM.yy HH:mm")
+                </small>
+
+            </div>
+        </div>
+    }
+}
+
+@code {
+    // fixed league shortcut for Champions League
+    private const string LeagueShortcut = "champion1";
+
+    private int season = 2023; // CL 23/24 data
+    private int matchday = 1;
+    private int maxMatchday = 38;
+
+    private List<int> seasons = new();
+
+    private List<MatchData>? matches;
+    private bool loading;
+    private string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await InitializeAsync();
+    }
+
+    private async Task InitializeAsync()
+    {
+        var current = DateTime.Now.Year;
+        seasons = Enumerable.Range(current - 10, 12).OrderByDescending(x => x).ToList();
+        if (!seasons.Contains(season)) season = seasons.First();
+        await LoadMatches();
+    }
+
+    private async Task OnSeasonChanged(ChangeEventArgs e)
+    {
+        if (int.TryParse(e?.Value?.ToString(), out var s))
+        {
+            season = s;
+            await LoadMatches();
+        }
+    }
+
+    private async Task LoadMatches()
+    {
+        loading = true;
+
+        try
+        {
+            errorMessage = null;
+            matches = await Api.GetMatchdayAsync(LeagueShortcut, season, matchday);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Failed to load matches: {ex.Message}";
+            matches = new List<MatchData>();
+        }
+        finally
+        {
+            loading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task PrevMatchday()
+    {
+        if (matchday <= 1) return;
+
+        matchday--;
+        await LoadMatches();
+    }
+
+    private async Task NextMatchday()
+    {
+        matchday++;
+        await LoadMatches();
+    }
+
+    private async Task OnMatchdayChanged(ChangeEventArgs e)
+    {
+        if (int.TryParse(e?.Value?.ToString(), out var md))
+        {
+            matchday = md;
+            await LoadMatches();
+        }
+    }
+
+    private string TranslateResultType(string resultName)
+    {
+        return resultName switch
+        {
+            "Halbzeit" => "Halftime",
+            "Endergebnis" => "Final result",
+            _ => resultName
+        };
+    }
+}
